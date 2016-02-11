@@ -9,23 +9,24 @@ do
     -p=*|--prefix=*)
       cosy_prefix="${i#*=}"
       cosy_prefix="${cosy_prefix%/}"
-      shift # past argument=value
     ;;
-    --l=*|--lua=*)
+    -l=*|--lua=*)
       lua_version="${i#*=}"
       lua_version="${lua_version%/}"
-      shift # past argument=value
     ;;
-    --in-ci)
+    -m|--minimal)
+      minimal=true
+    ;;
+    -i|--in-ci)
       in_ci=true
-      shift # past argument=value
     ;;
     *)
       echo "Usage: "
-      echo "  install [--prefix=PREFIX] [--lua=LUA_VERSION] [--in-ci]"
+      echo "  install [--prefix=PREFIX] [--lua=LUA_VERSION] [--minimal] [--in-ci]"
       exit 1;
     ;;
   esac
+  shift
 done
 
 # Useful variables:
@@ -216,6 +217,11 @@ git submodule update
     && echo -e "${green}success${nc}" \
     || echo -e "${red}failure${nc}"
 }
+
+if [ ! -z "${minimal+x}" ]; then
+  echo -e "Skipping openresty and web dependencies as minimal install is set."
+  return
+fi
 
 # Install web dependencies:
 (
