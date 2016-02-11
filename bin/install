@@ -78,7 +78,7 @@ if command -v git >> "${cosy_log}" 2>&1; then
   version=$(git rev-parse HEAD)
   if [ "${version}" = "${oldversion}" ]; then
     echo -e "Environment is already installed at version ${green}${oldversion}${nc}."
-    exit 0
+    return
   fi
 fi
 
