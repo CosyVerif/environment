@@ -32,9 +32,17 @@ cosy_prefix=${cosy_prefix:-/usr/local}
 lua_version=${lua_version:-5.2}
 parallel=$(nproc 2> /dev/null || sysctl -n hw.ncpu 2> /dev/null)
 
-if [ ! -w "${cosy_prefix}" ]; then
-  sudo="sudo"
-fi
+# Test if sudo is required:
+{
+  if [ -d "${cosy_prefix}" ]; then
+    write_test=${cosy_prefix}
+  else
+    write_test=$(dirname "${cosy_prefix}")
+  fi
+  if [ ! -w "${write_test}" ]; then
+    sudo="sudo"
+  fi
+}
 
 if [ ! -z "${in_ci+x}" ]; then
   red=''
