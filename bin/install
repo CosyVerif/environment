@@ -58,10 +58,6 @@ fi
 cosy_temp=$(mktemp -d 2>/dev/null || mktemp -d -t cosy)
 cosy_log="${cosy_temp}/install.log"
 
-echo -e "Prefix   : ${green}${cosy_prefix}${nc}"
-echo -e "Temporary: ${green}${cosy_temp}${nc}"
-echo -e "Log file : ${green}${cosy_log}${nc}"
-
 function error ()
 {
   echo -e "${red}An error happened.${nc}"
