@@ -12,5 +12,5 @@ ADD . /usr/local/cosy/environment
 
 USER cosy
 
-RUN cd /usr/local/cosy/environment && ./bin/install --prefix=/usr/local/cosy
+RUN cd /usr/local/cosy/environment && ./bin/install --in-ci --prefix=/usr/local/cosy
 RUN rm -rf /usr/local/cosy/environment
