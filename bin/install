@@ -84,13 +84,18 @@ if command -v git >> "${cosy_log}" 2>&1; then
     echo -e "Environment is already installed at version ${green}${oldversion}${nc}."
     return
   fi
-fi
+fi >> "${cosy_log}" 2>&1
 
-(
-  cd "${currentwd}" || exit 1
-  git submodule init
-  git submodule update
-)
+{
+  echo -n "Initializing git submodules... "
+  (
+    cd "${currentwd}" || exit 1
+    git submodule init
+    git submodule update
+  ) >> "${cosy_log}" 2>&1 \
+  && echo -e "${green}success${nc}" \
+  || echo -e "${red}failure${nc}"
+}
 
 # Install dependencies:
 {
