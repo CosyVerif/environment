@@ -35,6 +35,10 @@ cosy_prefix=${cosy_prefix:-/usr/local}
 lua_version=${lua_version:-5.2}
 parallel=$(nproc 2> /dev/null || sysctl -n hw.ncpu 2> /dev/null)
 
+if [ ! -w "${cosy_prefix}" ]; then
+  sudo="sudo"
+fi
+
 if [ ! -z "${in_ci+x}" ]; then
   red=''
   green=''
@@ -85,7 +89,7 @@ trap error ERR
       sudo apt-get update  --yes
       sudo apt-get install --yes git make clang gcc diffutils patch curl unzip \
                                  perl build-essential wget python python-pip \
-                                 libc6-dev libssl-dev libev-dev \
+                                 libc6-dev libssl-dev \
                                  libreadline-dev libncurses5-dev libpcre3-dev \
                                  redis-server imagemagick npm caca-utils
       sudo pip install hererocks
@@ -97,7 +101,7 @@ trap error ERR
       export LD_LIBRARY_PATH="${HOMEBREW_PREFIX}/lib:${LD_LIBRARY_PATH}"
       export DYLD_LIBRARY_PATH="${HOMEBREW_PREFIX}/lib:${DYLD_LIBRARY_PATH}"
       brew update
-      brew install openssl libev pcre python redis imagemagick wget npm libcaca
+      brew install openssl pcre python redis imagemagick wget npm libcaca
       brew link --force openssl
       pip install hererocks
       ;;
@@ -113,11 +117,25 @@ trap error ERR
   export LD_LIBRARY_PATH="${cosy_prefix}/lib:${LD_LIBRARY_PATH}"
 }
 
+# Install libev:
+{
+  export CC=clang
+  echo -n "Installing libev... "
+  (
+    cd dependencies/libev
+    ./configure --prefix="${cosy_prefix}"
+    make
+    ${sudo} make install
+  ) >> "${cosy_log}" 2>&1 \
+    && echo -e "${green}success${nc}" \
+    || echo -e "${red}failure${nc}"
+}
+
 # Install lua, luarocks and packages:
 {
   export CC=clang
   echo -n "Installing lua ${lua_version} and luarocks... "
-  hererocks "${cosy_prefix}" -r^ --lua="${lua_version}" \
+  ${sudo} hererocks "${cosy_prefix}" -r^ --lua="${lua_version}" \
     >> "${cosy_log}" 2>&1 \
     && echo -e "${green}success${nc}" \
     || echo -e "${red}failure${nc}"
@@ -140,14 +158,14 @@ trap error ERR
     else
       echo -n "  Installing ${dependency} as it is not installed... "
       # shellcheck disable=SC2086
-      "${cosy_prefix}/bin/luarocks" install "${dependency}" \
+      ${sudo} "${cosy_prefix}/bin/luarocks" install "${dependency}" \
         >> "${cosy_log}" 2>&1 \
        && echo -e "${green}success${nc}" \
        || echo -e "${red}failure${nc}"
     fi
   done
   echo -n "Installing lua 5.1 and luarocks for nginx... "
-  hererocks "${cosy_temp}/lua_install" -r^ --lua="5.1" \
+  ${sudo} hererocks "${cosy_temp}/lua_install" -r^ --lua="5.1" \
     >> "${cosy_log}" 2>&1 \
     && echo -e "${green}success${nc}" \
     || echo -e "${red}failure${nc}"
@@ -164,41 +182,21 @@ trap error ERR
     else
       echo -n "  Installing ${dependency} as it is not installed... "
       # shellcheck disable=SC2086
-      "${cosy_temp}/lua_install/bin/luarocks" install --tree="${cosy_prefix}" "${dependency}" \
+      ${sudo} "${cosy_temp}/lua_install/bin/luarocks" install --tree="${cosy_prefix}" "${dependency}" \
         >> "${cosy_log}" 2>&1 \
        && echo -e "${green}success${nc}" \
        || echo -e "${red}failure${nc}"
     fi
   done
   echo -n "Installing sh-realpath... "
-  ( cp sh-realpath/realpath.sh "${cosy_prefix}/bin/"
-    chmod a+x "${cosy_prefix}/bin/realpath.sh"
+  ( ${sudo} cp dependencies/sh-realpath/realpath.sh "${cosy_prefix}/bin/"
+    ${sudo} chmod a+x "${cosy_prefix}/bin/realpath.sh"
   ) >> "${cosy_log}" 2>&1 \
     && echo -e "${green}success${nc}" \
     || echo -e "${red}failure${nc}"
-  echo -n "Generating cosy rockspec... "
-  ( # shellcheck disable=SC2091
-    $("${cosy_prefix}/bin/luarocks" path | tr "'" ";")
-    export LUA_PATH="${LUA_PATH};./src/?.lua"
-    "${cosy_prefix}/bin/lua" src/cosy/rockspec/bin.lua
-  ) >> "${cosy_log}" 2>&1 \
-    && echo -e "${green}success${nc}" \
-    || echo -e "${red}failure${nc}"
-  echo -n "Installing cosy (this may take a while)... "
-  ( "${cosy_prefix}/bin/luarocks" make rockspec/cosy-client-master-1.rockspec
-    "${cosy_prefix}/bin/luarocks" make rockspec/cosy-master-1.rockspec
-  ) >> "${cosy_log}" 2>&1 \
-    && echo -e "${green}success${nc}" \
-    || echo -e "${red}failure${nc}"
-  echo -n "  Installing luasocket dev version..."
-  ( cd redis-lua
-    "${cosy_prefix}/bin/luarocks" install --server=https://luarocks.org/dev luasocket
-  ) >> "${cosy_log}" 2>&1 \
-    && echo -e "${green}success${nc}" \
-    || echo -e "${red}failure${nc}"
-  echo -n "  Installing redis-lua (patched for cosy)... "
-  ( cd redis-lua
-    "${cosy_prefix}/bin/luarocks" make rockspec/redis-lua-scm-1.rockspec
+  echo -n "Installing makeself... "
+  ( ${sudo} cp dependencies/makeself/makeself.sh "${cosy_prefix}/bin/"
+    ${sudo} chmod a+x "${cosy_prefix}/bin/makeself.sh"
   ) >> "${cosy_log}" 2>&1 \
     && echo -e "${green}success${nc}" \
     || echo -e "${red}failure${nc}"
@@ -230,48 +228,45 @@ trap error ERR
   mkdir -p "${cosy_prefix}/share/cosy/www/fonts"
   for module in node_modules/*; do
     name=$(basename "${module}")
-    cp "${module}/dist/"*.js    "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
-    cp "${module}/dist/"*.map   "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
-    cp "${module}/dist/js/"*    "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
-    cp "${module}/dist/css/"*   "${cosy_prefix}/share/cosy/www/css/"   2> /dev/null || true
-    cp "${module}/dist/fonts/"* "${cosy_prefix}/share/cosy/www/fonts/" 2> /dev/null || true
-    cp "${module}/js/"*         "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
-    cp "${module}/css/"*        "${cosy_prefix}/share/cosy/www/css/"   2> /dev/null || true
-    cp "${module}/fonts/"*      "${cosy_prefix}/share/cosy/www/fonts/" 2> /dev/null || true
-    cp "${module}/${name}"*.js  "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
-    cp "${module}/${name}"*.map "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
-    cp "${module}/${name}"*.css "${cosy_prefix}/share/cosy/www/css/"   2> /dev/null || true
+    ${sudo} cp "${module}/dist/"*.js    "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
+    ${sudo} cp "${module}/dist/"*.map   "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
+    ${sudo} cp "${module}/dist/js/"*    "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
+    ${sudo} cp "${module}/dist/css/"*   "${cosy_prefix}/share/cosy/www/css/"   2> /dev/null || true
+    ${sudo} cp "${module}/dist/fonts/"* "${cosy_prefix}/share/cosy/www/fonts/" 2> /dev/null || true
+    ${sudo} cp "${module}/js/"*         "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
+    ${sudo} cp "${module}/css/"*        "${cosy_prefix}/share/cosy/www/css/"   2> /dev/null || true
+    ${sudo} cp "${module}/fonts/"*      "${cosy_prefix}/share/cosy/www/fonts/" 2> /dev/null || true
+    ${sudo} cp "${module}/${name}"*.js  "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
+    ${sudo} cp "${module}/${name}"*.map "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
+    ${sudo} cp "${module}/${name}"*.css "${cosy_prefix}/share/cosy/www/css/"   2> /dev/null || true
   done
-  cp "lua.vm.js/dist/lua.vm.js" "${cosy_prefix}/share/cosy/www/js/"
+  rm -rf node_modules
+  ${sudo} cp "dependencies/lua.vm.js/dist/lua.vm.js" "${cosy_prefix}/share/cosy/www/js/"
 }
 
 # Install openresty:
 {
   echo -n "Installing openresty... "
   (
-    cd openresty || exit 1
+    cd dependencies/openresty || exit 1
     make
-    cd ngx_openresty-1.9.3.2rc3 || exit 1
-    ./configure --prefix="${cosy_prefix}" \
-                --without-lua51 \
-                --with-ipv6 \
-                --with-pcre-jit
-    make -j"${parallel}"
-    make install
-    make clean
+    for dir in openresty-*; do
+      if [ -d "${dir}" ]; then
+        cd "${dir}" || exit 1
+        ./configure --prefix="${cosy_prefix}" \
+                    --without-lua51 \
+                    --with-ipv6 \
+                    --with-pcre-jit
+        make -j"${parallel}"
+        ${sudo} make install
+        make clean
+        break
+      fi
+    done
   ) >> "${cosy_log}" 2>&1 \
     && echo -e "${green}success${nc}" \
     || echo -e "${red}failure${nc}"
 }
-
-echo "You can now try the following commands:"
-echo "- ${cosy_prefix}/bin/cosy-server start [--clean] [--force] [--port=<port>]"
-echo "- ${cosy_prefix}/bin/cosy-server stop  [--force]"
-echo "- ${cosy_prefix}/bin/cosy-server version"
-echo "- ${cosy_prefix}/bin/cosy"
-echo "- ${cosy_prefix}/bin/cosy-tool"
-echo "The development environment also provides two commands:"
-echo "- ${cosy_prefix}/bin/cosy-check"
 
 if [ ! -z "${in_ci+x}" ]; then
   cat "${cosy_log}"

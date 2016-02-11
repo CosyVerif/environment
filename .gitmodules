@@ -1,0 +1,15 @@
+[submodule "ngx_openresty"]
+	path = dependencies/openresty
+	url = https://github.com/openresty/ngx_openresty
+[submodule "sh-realpath"]
+	path = dependencies/sh-realpath
+	url = https://github.com/mkropat/sh-realpath
+[submodule "makeself"]
+	path = dependencies/makeself
+	url = https://github.com/megastep/makeself.git
+[submodule "lua.vm.js"]
+	path = dependencies/lua.vm.js
+	url = https://github.com/kripken/lua.vm.js.git
+[submodule "libev"]
+	path = dependencies/libev
+	url = https://github.com/enki/libev.git
