@@ -28,9 +28,6 @@ do
   esac
 done
 
-git submodule init
-git submodule update
-
 cosy_prefix=${cosy_prefix:-/usr/local}
 lua_version=${lua_version:-5.2}
 parallel=$(nproc 2> /dev/null || sysctl -n hw.ncpu 2> /dev/null)
@@ -116,6 +113,9 @@ trap error ERR
   export LIBRARY_PATH="${cosy_prefix}/lib:${LIBRARY_PATH}"
   export LD_LIBRARY_PATH="${cosy_prefix}/lib:${LD_LIBRARY_PATH}"
 }
+
+git submodule init
+git submodule update
 
 # Install libev:
 {
