@@ -29,6 +29,8 @@ do
 done
 
 # Useful variables:
+currentwd=$(dirname "$0")
+currentwd=$(dirname "${currentwd}")
 cosy_temp=$(mktemp -d 2>/dev/null || mktemp -d -t cosy)
 cosy_log="${cosy_temp}/install.log"
 cosy_prefix=${cosy_prefix:-${cosy_temp}}
@@ -56,7 +58,6 @@ else
   export green='\033[0;32m'
   export nc='\033[0m'
 fi
-
 
 function error ()
 {
@@ -139,10 +140,11 @@ git submodule update
   export CC=clang
   echo -n "Installing libev... "
   (
-    cd dependencies/libev
+    cd "${currentwd}/dependencies/libev"
     ./configure --prefix="${cosy_prefix}"
     make
     ${sudo} make install
+    make clean
   ) >> "${cosy_log}" 2>&1 \
     && echo -e "${green}success${nc}" \
     || echo -e "${red}failure${nc}"
@@ -206,29 +208,22 @@ git submodule update
     fi
   done
   echo -n "Installing sh-realpath... "
-  ( ${sudo} cp dependencies/sh-realpath/realpath.sh "${cosy_prefix}/bin/"
+  ( ${sudo} cp "${currentwd}/dependencies/sh-realpath/realpath.sh" "${cosy_prefix}/bin/"
     ${sudo} chmod a+x "${cosy_prefix}/bin/realpath.sh"
-  ) >> "${cosy_log}" 2>&1 \
-    && echo -e "${green}success${nc}" \
-    || echo -e "${red}failure${nc}"
-  echo -n "Installing makeself... "
-  ( ${sudo} cp dependencies/makeself/makeself.sh "${cosy_prefix}/bin/"
-    ${sudo} chmod a+x "${cosy_prefix}/bin/makeself.sh"
   ) >> "${cosy_log}" 2>&1 \
     && echo -e "${green}success${nc}" \
     || echo -e "${red}failure${nc}"
 }
 
 # Install web dependencies:
-{
+(
+  cd "${currentwd}" || exit 1
   web_dependencies=(
     bootbox
     bootstrap3
-    casperjs
     font-awesome
     jquery
     jquery-locationpicker
-    karma
     sjcl
   )
   rm -rf node_modules
@@ -259,31 +254,29 @@ git submodule update
   done
   ${sudo} rm -rf node_modules
   ${sudo} cp "dependencies/lua.vm.js/dist/lua.vm.js" "${cosy_prefix}/share/cosy/www/js/"
-}
+)
 
 # Install openresty:
-{
-  echo -n "Installing openresty... "
-  (
-    cd dependencies/openresty || exit 1
-    make
-    for dir in openresty-*; do
-      if [ -d "${dir}" ]; then
-        cd "${dir}" || exit 1
-        ./configure --prefix="${cosy_prefix}" \
-                    --without-lua51 \
-                    --with-ipv6 \
-                    --with-pcre-jit
-        make -j"${parallel}"
-        ${sudo} make install
-        make clean
-        break
-      fi
-    done
-  ) >> "${cosy_log}" 2>&1 \
-    && echo -e "${green}success${nc}" \
-    || echo -e "${red}failure${nc}"
-}
+echo -n "Installing openresty... "
+(
+  cd "${currentwd}/dependencies/openresty" || exit 1
+  make
+  for dir in openresty-*; do
+    if [ -d "${dir}" ]; then
+      cd "${dir}" || exit 1
+      ./configure --prefix="${cosy_prefix}" \
+                  --without-lua51 \
+                  --with-ipv6 \
+                  --with-pcre-jit
+      make -j"${parallel}"
+      ${sudo} make install
+      make clean
+      break
+    fi
+  done
+) >> "${cosy_log}" 2>&1 \
+  && echo -e "${green}success${nc}" \
+  || echo -e "${red}failure${nc}"
 
 ${sudo} git rev-parse HEAD > "${cosy_prefix}"/share/cosy/environment.version
 
