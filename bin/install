@@ -121,6 +121,17 @@ trap error ERR
 git submodule init
 git submodule update
 
+{
+  ${sudo} mkdir -p ""${cosy_prefix}"/share/cosy/"
+  if [ -f "${cosy_prefix}/share/cosy/environment.version" ]; then
+    oldversion=$(cat "${cosy_prefix}/share/cosy/environment.version")
+  fi
+  if [ "$(git rev-parse HEAD)" = "${old_version}" ]; then
+    echo -e "Environment is already installed at version ${green}${oldversion}${nc}."
+    exit 0
+  fi
+}
+
 # Install libev:
 {
   export CC=clang
@@ -271,6 +282,8 @@ git submodule update
     && echo -e "${green}success${nc}" \
     || echo -e "${red}failure${nc}"
 }
+
+${sudo} git rev-parse HEAD > "${cosy_prefix}"/share/cosy/environment.version
 
 if [ ! -z "${in_ci+x}" ]; then
   cat "${cosy_log}"
