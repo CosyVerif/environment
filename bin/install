@@ -40,7 +40,7 @@ parallel=$(nproc 2> /dev/null || sysctl -n hw.ncpu 2> /dev/null)
     write_test=$(dirname "${cosy_prefix}")
   fi
   if [ ! -w "${write_test}" ]; then
-    sudo="sudo"
+    export sudo="sudo"
   fi
 }
 
