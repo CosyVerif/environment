@@ -1,0 +1,12 @@
+build_image: ubuntu:14.04
+
+script:
+  - ./bin/install --in-ci --prefix=myinstall
+
+notifications:
+  email:
+    recipients:
+      - alban@linard.fr
+      - leprieur@lipn.univ-paris13.fr
+    on_success: change
+    on_failure: change

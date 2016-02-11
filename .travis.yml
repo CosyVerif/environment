@@ -1,0 +1,17 @@
+os:
+  - linux
+  - osx
+osx_image: xcode7.2b1
+sudo: required
+dist: trusty
+
+script:
+  - ./bin/install --in-ci --prefix=myinstall
+
+notifications:
+  recipients:
+    - alban@linard.fr
+    - leprieur@lipn.univ-paris13.fr
+  email:
+    on_success: change
+    on_failure: change
