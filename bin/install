@@ -235,7 +235,7 @@ git submodule update
   echo "Installing web dependencies... "
   for dependency in ${web_dependencies[*]}; do
     echo -n "  Installing ${dependency}... "
-    npm install "${dependency}" >> "${cosy_log}" 2>&1 \
+    ${sudo} npm install "${dependency}" >> "${cosy_log}" 2>&1 \
       && echo -e "${green}success${nc}" \
       || echo -e "${red}failure${nc}"
   done
