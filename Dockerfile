@@ -8,9 +8,9 @@ RUN adduser --disabled-password --gecos "" cosy
 RUN adduser cosy sudo
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-ADD . /usr/local/cosy/environment
+ADD . /home/cosy/environment
 
 USER cosy
 
-RUN cd /usr/local/cosy/environment && ./bin/install --in-ci --prefix=/usr/local/cosy
-RUN rm -rf /usr/local/cosy/environment
+RUN cd /home/cosy/environment && ./bin/install --in-ci --prefix=/usr/local/cosy
+RUN rm -rf /home/cosy/environment
