@@ -22,7 +22,7 @@ do
     ;;
     *)
       echo "Usage: "
-      echo "  build-server [--prefix=PREFIX] [--lua=LUA_VERSION] [--in-ci]"
+      echo "  install [--prefix=PREFIX] [--lua=LUA_VERSION] [--in-ci]"
       exit 1;
     ;;
   esac
