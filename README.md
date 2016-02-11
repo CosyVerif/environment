@@ -12,7 +12,7 @@ To build the environment, use the following command:
 ```sh
   ./bin/install --help
   Usage:
-    build-server [--prefix=PREFIX] [--lua=LUA_VERSION] [--in-ci]
+    install [--prefix=PREFIX] [--lua=LUA_VERSION] [--in-ci]
 ```
 
 The `--in-ci` parameter is only used in continuous integration or automated
