@@ -79,7 +79,6 @@ if command -v git; then
     echo -e "Environment is already installed at version ${green}${oldversion}${nc}."
     exit 0
   fi
-  exit 1
 fi
 
 # Install dependencies:
