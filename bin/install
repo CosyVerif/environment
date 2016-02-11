@@ -28,7 +28,10 @@ do
   esac
 done
 
-cosy_prefix=${cosy_prefix:-/usr/local}
+# Useful variables:
+cosy_temp=$(mktemp -d 2>/dev/null || mktemp -d -t cosy)
+cosy_log="${cosy_temp}/install.log"
+cosy_prefix=${cosy_prefix:-${cosy_temp}}
 lua_version=${lua_version:-5.2}
 parallel=$(nproc 2> /dev/null || sysctl -n hw.ncpu 2> /dev/null)
 
@@ -45,18 +48,15 @@ parallel=$(nproc 2> /dev/null || sysctl -n hw.ncpu 2> /dev/null)
 }
 
 if [ ! -z "${in_ci+x}" ]; then
-  red=''
-  green=''
-  nc=''
+  export red=''
+  export green=''
+  export nc=''
 else
-  red='\033[0;31m'
-  green='\033[0;32m'
-  nc='\033[0m'
+  export red='\033[0;31m'
+  export green='\033[0;32m'
+  export nc='\033[0m'
 fi
 
-# Useful variables:
-cosy_temp=$(mktemp -d 2>/dev/null || mktemp -d -t cosy)
-cosy_log="${cosy_temp}/install.log"
 
 function error ()
 {
