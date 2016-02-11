@@ -75,7 +75,8 @@ if command -v git >> "${cosy_log}" 2>&1; then
   if [ -f "${cosy_prefix}/share/cosy/environment.version" ]; then
     oldversion=$(cat "${cosy_prefix}/share/cosy/environment.version")
   fi
-  if [ "$(git rev-parse HEAD)" = "${old_version}" ]; then
+  version=$(git rev-parse HEAD)
+  if [ "${version}" = "${oldversion}" ]; then
     echo -e "Environment is already installed at version ${green}${oldversion}${nc}."
     exit 0
   fi
