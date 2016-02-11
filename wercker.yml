@@ -2,6 +2,10 @@ box: ubuntu:14.04
 build:
   steps:
     - script:
-        name: "Install"
+        name: "Install git"
         code: |
-          ./bin/install --in-ci --prefix=/home/cosy/install
+          apt-get update
+          apt-get install --yes git
+    - script:
+        name: "Run install"
+        code: ./bin/install --in-ci --prefix=myinstall

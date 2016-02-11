@@ -1,6 +1,8 @@
 build_image: ubuntu:14.04
 
 script:
+  - apt-get update
+  - apt-get install --yes git
   - ./bin/install --in-ci --prefix=myinstall
 
 notifications:
