@@ -2,7 +2,7 @@ FROM ubuntu:14.04
 MAINTAINER Alban Linard <alban@linard.fr>
 
 RUN apt-get update
-RUN apt-get --yes install sudo
+RUN apt-get --yes install sudo git
 
 RUN adduser --disabled-password --gecos "" cosy
 RUN adduser cosy sudo

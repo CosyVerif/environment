@@ -82,6 +82,9 @@ if command -v git >> "${cosy_log}" 2>&1; then
   fi
 fi
 
+git submodule init
+git submodule update
+
 # Install dependencies:
 {
   echo -n "Installing development packages... "
@@ -101,7 +104,7 @@ fi
   case "$(uname -s)" in
     "Linux")
       sudo apt-get update  --yes
-      sudo apt-get install --yes git make clang gcc diffutils patch curl unzip \
+      sudo apt-get install --yes make clang gcc diffutils patch curl unzip \
                                  perl build-essential wget python python-pip \
                                  libc6-dev libssl-dev \
                                  libreadline-dev libncurses5-dev libpcre3-dev \
@@ -130,9 +133,6 @@ fi
   export LIBRARY_PATH="${cosy_prefix}/lib:${LIBRARY_PATH}"
   export LD_LIBRARY_PATH="${cosy_prefix}/lib:${LD_LIBRARY_PATH}"
 }
-
-git submodule init
-git submodule update
 
 # Install libev:
 {
