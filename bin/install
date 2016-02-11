@@ -29,7 +29,7 @@ do
 done
 
 # Useful variables:
-currentwd=$(dirname "$0")
+currentwd=$(dirname "${BASH_SOURCE[0]}")
 currentwd=$(dirname "${currentwd}")
 cosy_temp=$(mktemp -d 2>/dev/null || mktemp -d -t cosy)
 cosy_log="${cosy_temp}/install.log"
