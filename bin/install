@@ -86,8 +86,11 @@ if command -v git >> "${cosy_log}" 2>&1; then
   fi
 fi
 
-git submodule init
-git submodule update
+(
+  cd "${currentwd}" || exit 1
+  git submodule init
+  git submodule update
+)
 
 # Install dependencies:
 {
