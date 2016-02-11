@@ -222,10 +222,10 @@ git submodule update
       && echo -e "${green}success${nc}" \
       || echo -e "${red}failure${nc}"
   done
-  mkdir -p "${cosy_prefix}/share/cosy/www"
-  mkdir -p "${cosy_prefix}/share/cosy/www/js"
-  mkdir -p "${cosy_prefix}/share/cosy/www/css"
-  mkdir -p "${cosy_prefix}/share/cosy/www/fonts"
+  ${sudo} mkdir -p "${cosy_prefix}/share/cosy/www"
+  ${sudo} mkdir -p "${cosy_prefix}/share/cosy/www/js"
+  ${sudo} mkdir -p "${cosy_prefix}/share/cosy/www/css"
+  ${sudo} mkdir -p "${cosy_prefix}/share/cosy/www/fonts"
   for module in node_modules/*; do
     name=$(basename "${module}")
     ${sudo} cp "${module}/dist/"*.js    "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
