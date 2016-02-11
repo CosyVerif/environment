@@ -72,7 +72,7 @@ trap error ERR
 
 # Detect if environment is already installed:
 if command -v git >> "${cosy_log}" 2>&1; then
-  ${sudo} mkdir -p ""${cosy_prefix}"/share/cosy/"
+  ${sudo} mkdir -p "${cosy_prefix}/share/cosy/"
   if [ -f "${cosy_prefix}/share/cosy/environment.version" ]; then
     oldversion=$(cat "${cosy_prefix}/share/cosy/environment.version")
   fi
