@@ -257,7 +257,7 @@ git submodule update
     ${sudo} cp "${module}/${name}"*.map "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
     ${sudo} cp "${module}/${name}"*.css "${cosy_prefix}/share/cosy/www/css/"   2> /dev/null || true
   done
-  rm -rf node_modules
+  ${sudo} rm -rf node_modules
   ${sudo} cp "dependencies/lua.vm.js/dist/lua.vm.js" "${cosy_prefix}/share/cosy/www/js/"
 }
 
