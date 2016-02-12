@@ -54,6 +54,9 @@ parallel=$(nproc 2> /dev/null || sysctl -n hw.ncpu 2> /dev/null)
   fi
 }
 
+${sudo} mkdir -p ${cosy_temp}
+${sudo} mkdir -p ${cosy_prefix}
+
 if [ ! -z "${in_ci+x}" ]; then
   export red=''
   export green=''
@@ -104,6 +107,7 @@ fi >> "${cosy_log}" 2>&1
 # Fix prefix to always be an absolute path:
 . ./dependencies/sh-realpath/realpath.sh
 cosy_prefix=$(realpath "${cosy_prefix}")
+cosy_temp=$(realpath "${cosy_temp}")
 
 # Install dependencies:
 {
