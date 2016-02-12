@@ -8,4 +8,4 @@ build:
           apt-get install --yes git
     - script:
         name: "Run install"
-        code: ./bin/install --in-ci --prefix=myinstall
+        code: ./bin/install --in-ci --prefix=myinstall --temp=temp
