@@ -325,8 +325,11 @@ echo -n "Installing openresty... "
   && echo -e "${green}success${nc}" \
   || echo -e "${red}failure${nc}"
 
-git rev-parse HEAD > "${cosy_temp}/environment.version"
-${sudo} mv "${cosy_temp}/environment.version" "${cosy_prefix}/share/cosy/environment.version"
+(
+  cd "${currentwd}" || exit 1
+  git rev-parse HEAD > "${cosy_temp}/environment.version"
+  ${sudo} mv "${cosy_temp}/environment.version" "${cosy_prefix}/share/cosy/environment.version"
+)
 
 if [ ! -z "${in_ci+x}" ]; then
   cat "${cosy_log}"
