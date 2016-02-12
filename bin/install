@@ -124,7 +124,7 @@ fi >> "${cosy_log}" 2>&1
 }
 
 # Fix prefix to always be an absolute path:
-. ./dependencies/sh-realpath/realpath.sh
+. "${currentwd}/dependencies/sh-realpath/realpath.sh"
 cosy_prefix=$(realpath "${cosy_prefix}")
 cosy_temp=$(realpath "${cosy_temp}")
 
