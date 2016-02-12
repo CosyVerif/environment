@@ -71,6 +71,10 @@ function error ()
 }
 trap error ERR
 
+# Fix prefix to always be an absolute path:
+. ./dependencies/sh-realpath/realpath.sh
+cosy_prefix=$(realpath "${cosy_prefix}")
+
 # Detect if environment is already installed:
 if command -v git >> "${cosy_log}" 2>&1; then
   ${sudo} mkdir -p "${cosy_prefix}/share/cosy/"
