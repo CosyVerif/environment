@@ -10,6 +10,10 @@ do
       cosy_prefix="${i#*=}"
       cosy_prefix="${cosy_prefix%/}"
     ;;
+    -t=*|--temp=*)
+      cosy_temp="${i#*=}"
+      cosy_temp="${cosy_temp%/}"
+    ;;
     -l=*|--lua=*)
       lua_version="${i#*=}"
       lua_version="${lua_version%/}"
@@ -22,7 +26,7 @@ do
     ;;
     *)
       echo "Usage: "
-      echo "  install [--prefix=PREFIX] [--lua=LUA_VERSION] [--minimal] [--in-ci]"
+      echo "  install [--prefix=PREFIX] [--temp=TEMP_DIR] [--lua=LUA_VERSION] [--minimal] [--in-ci]"
       exit 1;
     ;;
   esac
@@ -32,7 +36,7 @@ done
 # Useful variables:
 currentwd=$(dirname "${BASH_SOURCE[0]}")
 currentwd=$(dirname "${currentwd}")
-cosy_temp=$(mktemp -d 2>/dev/null || mktemp -d -t cosy)
+cosy_temp=${cosy_temp:-$(mktemp -d 2>/dev/null || mktemp -d -t cosy)}
 cosy_log="${cosy_temp}/install.log"
 cosy_prefix=${cosy_prefix:-${cosy_temp}}
 lua_version=${lua_version:-5.2}
