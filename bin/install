@@ -78,6 +78,25 @@ function error ()
 }
 trap error ERR
 
+# Add *path to cosy binaries:
+function fix_path ()
+{
+  where=$1
+  case "${os}" in
+    linux)
+      backup="";;
+    darwin)
+      backup=".cosy-back";;
+  esac
+  find "${where}/bin" -name "cosy*" | while IFS= read -r file; do
+    sed -i ${backup} -e "2i|export CPATH=\"${where}/include:\${CPATH}\"|" "${file}"
+    sed -i ${backup} -e "3i|export LIBRARY_PATH=\"${where}/lib:\${LIBRARY_PATH}\"|" "${file}"
+    sed -i ${backup} -e "4i|export LD_LIBRARY_PATH=\"${where}/lib:\${LD_LIBRARY_PATH}\"|" "${file}"
+    sed -i ${backup} -e "5i|export DYLD_LIBRARY_PATH=\"${where}/lib:\${DYLD_LIBRARY_PATH}\"|" "${file}"
+  done
+  find "${where}/bin" -type f -name "*.cosy-back" -exec rm -f {} \;
+}
+
 # Detect if environment is already installed:
 if command -v git >> "${cosy_log}" 2>&1; then
   ${sudo} mkdir -p "${cosy_prefix}/share/cosy/"
