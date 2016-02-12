@@ -212,7 +212,6 @@ cosy_temp=$(realpath "${cosy_temp}")
     serpent
   )
   for dependency in ${dependencies[*]}; do
-    echo $PWD ; ls $PWD
     if "${cosy_prefix}/bin/luarocks" list --porcelain \
         >> "${cosy_log}" 2>&1 \
         | grep --silent "${dependency}"; then
