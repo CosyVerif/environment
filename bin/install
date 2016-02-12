@@ -42,6 +42,8 @@ cosy_prefix=${cosy_prefix:-${cosy_temp}}
 lua_version=${lua_version:-5.2}
 parallel=$(nproc 2> /dev/null || sysctl -n hw.ncpu 2> /dev/null)
 
+export PATH="${PATH}:/sbin"
+
 # Test if sudo is required:
 {
   if [ -d "${cosy_prefix}" ]; then
