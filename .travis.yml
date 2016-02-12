@@ -6,8 +6,6 @@ sudo: required
 dist: trusty
 
 script:
-  - sudo apt-get update
-  - sudo apt-get install --yes git
   - ./bin/install --in-ci --prefix=myinstall
 
 notifications:
