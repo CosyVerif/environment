@@ -4,6 +4,7 @@ script:
   - apt-get update
   - apt-get install --yes git
   - ./bin/install --in-ci --prefix=myinstall
+  - shellcheck ./bin/install -x
 
 notifications:
   email:

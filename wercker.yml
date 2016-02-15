@@ -9,3 +9,6 @@ build:
     - script:
         name: "Run install"
         code: ./bin/install --in-ci --prefix=myinstall --temp=temp
+    - script:
+        name: "Check"
+        code: shellcheck ./bin/install -x
