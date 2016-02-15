@@ -214,7 +214,7 @@ cosy_temp=$(realpath "${cosy_temp}")
     fi
   done
   echo -n "Installing lua 5.1 and luarocks for nginx... "
-  ${sudo} hererocks "${cosy_temp}/lua_install" -r^ --lua="5.1" \
+  ${sudo} "${cosy_prefix}/usr/local/bin/hererocks" "${cosy_temp}/lua_install" -r^ --lua="5.1" \
     >> "${cosy_log}" 2>&1 \
     && echo -e "${green}success${nc}" \
     || echo -e "${red}failure${nc}"
