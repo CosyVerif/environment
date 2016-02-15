@@ -67,8 +67,8 @@ export PATH="${PATH}:/sbin"
   fi
 }
 
-${sudo} mkdir -p ${cosy_temp}
-${sudo} mkdir -p ${cosy_prefix}
+${sudo} mkdir -p "${cosy_temp}"
+${sudo} mkdir -p "${cosy_prefix}"
 
 if [ ! -z "${in_ci+x}" ]; then
   export red=''
@@ -118,6 +118,7 @@ fi
 }
 
 # Fix prefix to always be an absolute path:
+# shellcheck source=dependencies/sh-realpath/realpath.sh
 . "${currentwd}/dependencies/sh-realpath/realpath.sh"
 cosy_prefix=$(realpath "${cosy_prefix}")
 cosy_temp=$(realpath "${cosy_temp}")
