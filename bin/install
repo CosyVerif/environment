@@ -180,11 +180,16 @@ cosy_temp=$(realpath "${cosy_temp}")
 {
   export CC=clang
   echo -n "Installing lua ${lua_version} and luarocks... "
-  ${sudo} pip install --root="${cosy_prefix}" hererocks \
-    >> "${cosy_log}" 2>&1
-  path=$(find "${cosy_prefix}" -name "hererocks.py")
-  export PYTHONPATH=$(dirname "${path}"):"${PYTHONPATH}"
-  ${sudo} "${cosy_prefix}/usr/local/bin/hererocks" "${cosy_prefix}" -r^ --lua="${lua_version}" \
+  if pip list | grep "hererocks" >> "${cosy_temp}" 2>&1; then
+    hererocks="hererocks"
+  else
+    ${sudo} pip install --root="${cosy_prefix}" hererocks
+    path=$(find "${cosy_prefix}" -name "hererocks.py")
+    export PYTHONPATH
+    PYTHONPATH=$(dirname "${path}"):"${PYTHONPATH}"
+    hererocks="${cosy_prefix}/usr/local/bin/hererocks"
+  fi >> "${cosy_log}" 2>&1
+  ${sudo} "${hererocks}" "${cosy_prefix}" -r^ --lua="${lua_version}" \
     >> "${cosy_log}" 2>&1 \
     && echo -e "${green}success${nc}" \
     || echo -e "${red}failure${nc}"
@@ -214,7 +219,7 @@ cosy_temp=$(realpath "${cosy_temp}")
     fi
   done
   echo -n "Installing lua 5.1 and luarocks for nginx... "
-  ${sudo} "${cosy_prefix}/usr/local/bin/hererocks" "${cosy_temp}/lua_install" -r^ --lua="5.1" \
+  ${sudo} "${hererocks}" "${cosy_temp}/lua_install" -r^ --lua="5.1" \
     >> "${cosy_log}" 2>&1 \
     && echo -e "${green}success${nc}" \
     || echo -e "${red}failure${nc}"
