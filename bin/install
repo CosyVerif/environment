@@ -256,6 +256,7 @@ fi
   web_dependencies=(
     bootbox
     bootstrap3
+    d3
     font-awesome
     jquery
     jquery-locationpicker
