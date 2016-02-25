@@ -132,7 +132,7 @@ cosy_temp=$(realpath "${cosy_temp}")
     case "$(uname -s)" in
       "Linux")
         sudo apt-get update  --yes
-        sudo apt-get install --yes make clang gcc diffutils patch curl unzip \
+        sudo apt-get install --yes make clang gcc diffutils patch curl zip unzip \
                                    perl build-essential wget python python-pip \
                                    libc6-dev libssl-dev \
                                    libreadline-dev libncurses5-dev libpcre3-dev \
