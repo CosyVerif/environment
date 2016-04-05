@@ -282,6 +282,17 @@ echo -n "Installing openresty... "
   && echo -e "${green}success${nc}" \
   || echo -e "${red}failure${nc}"
 
+# Install resty-jwt:
+echo -n "Installing openresty... "
+(
+  cd "${currentwd}/dependencies/nginx-jwt" || exit 1
+  ./build deps
+  cd ..
+  "${cosy_prefix}/bin/luarocks" make nginx-jwt-master-1.rockspec
+) >> "${cosy_log}" 2>&1 \
+  && echo -e "${green}success${nc}" \
+  || echo -e "${red}failure${nc}"
+
 (
   cd "${currentwd}" || exit 1
   git rev-parse HEAD > "${cosy_temp}/environment.version"

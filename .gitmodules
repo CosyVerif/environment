@@ -7,3 +7,6 @@
 [submodule "lua.vm.js"]
 	path = dependencies/lua.vm.js
 	url = https://github.com/kripken/lua.vm.js.git
+[submodule "dependencies/nginx-jwt"]
+	path = dependencies/nginx-jwt
+	url = https://github.com/auth0/nginx-jwt.git
