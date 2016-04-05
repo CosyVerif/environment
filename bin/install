@@ -14,10 +14,6 @@ do
       cosy_temp="${i#*=}"
       cosy_temp="${cosy_temp%/}"
     ;;
-    -l=*|--lua=*)
-      lua_version="${i#*=}"
-      lua_version="${lua_version%/}"
-    ;;
     -m|--minimal)
       minimal=true
     ;;
@@ -26,7 +22,7 @@ do
     ;;
     *)
       echo "Usage: "
-      echo "  install [--prefix=PREFIX] [--temp=TEMP_DIR] [--lua=LUA_VERSION] [--minimal] [--in-ci]"
+      echo "  install [--prefix=PREFIX] [--temp=TEMP_DIR] [--minimal] [--in-ci]"
       exit 1;
     ;;
   esac
@@ -39,7 +35,6 @@ currentwd=$(dirname "${currentwd}")
 cosy_temp=${cosy_temp:-$(mktemp -d 2>/dev/null || mktemp -d -t cosy)}
 cosy_log="${cosy_temp}/install.log"
 cosy_prefix=${cosy_prefix:-${cosy_temp}}
-lua_version=${lua_version:-5.2}
 parallel=$(nproc 2> /dev/null || sysctl -n hw.ncpu 2> /dev/null)
 
 { # Detect if apt-get or brew is available:
@@ -161,26 +156,11 @@ cosy_temp=$(realpath "${cosy_temp}")
   export LD_LIBRARY_PATH="${cosy_prefix}/lib:${LD_LIBRARY_PATH}"
 }
 
-# Install libev:
-{
-  export CC=clang
-  echo -n "Installing libev... "
-  (
-    cd "${currentwd}/dependencies/libev"
-    ./configure --prefix="${cosy_prefix}"
-    make
-    ${sudo} make install
-    make clean
-  ) >> "${cosy_log}" 2>&1 \
-    && echo -e "${green}success${nc}" \
-    || echo -e "${red}failure${nc}"
-}
-
 # Install lua, luarocks and packages:
 {
   export CC=clang
-  echo -n "Installing lua ${lua_version} and luarocks... "
-  if pip list | grep "hererocks" >> "${cosy_temp}" 2>&1; then
+  echo -n "Installing luajit and luarocks... "
+  if pip list | grep "hererocks" >> "${cosy_log}" 2>&1; then
     hererocks="hererocks"
   else
     ${sudo} pip install --root="${cosy_prefix}" hererocks
@@ -189,13 +169,14 @@ cosy_temp=$(realpath "${cosy_temp}")
     PYTHONPATH=$(dirname "${path}"):"${PYTHONPATH}"
     hererocks="${cosy_prefix}/usr/local/bin/hererocks"
   fi >> "${cosy_log}" 2>&1
-  ${sudo} "${hererocks}" "${cosy_prefix}" -r^ --lua="${lua_version}" \
+  ${sudo} "${hererocks}" "${cosy_prefix}" -r^ --luajit=2.1 \
     >> "${cosy_log}" 2>&1 \
     && echo -e "${green}success${nc}" \
     || echo -e "${red}failure${nc}"
   dependencies=(
     argparse
     busted
+    lapis
     luacheck
     luacov
     luacov-coveralls
@@ -203,6 +184,9 @@ cosy_temp=$(realpath "${cosy_temp}")
     luasec
     lustache
     serpent
+    lua-cjson
+    lua-resty-http
+    md5
   )
   for dependency in ${dependencies[*]}; do
     if "${cosy_prefix}/bin/luarocks" list --porcelain \
@@ -213,30 +197,6 @@ cosy_temp=$(realpath "${cosy_temp}")
       echo -n "  Installing ${dependency} as it is not installed... "
       # shellcheck disable=SC2086
       ${sudo} "${cosy_prefix}/bin/luarocks" install "${dependency}" \
-        >> "${cosy_log}" 2>&1 \
-       && echo -e "${green}success${nc}" \
-       || echo -e "${red}failure${nc}"
-    fi
-  done
-  echo -n "Installing lua 5.1 and luarocks for nginx... "
-  ${sudo} "${hererocks}" "${cosy_temp}/lua_install" -r^ --lua="5.1" \
-    >> "${cosy_log}" 2>&1 \
-    && echo -e "${green}success${nc}" \
-    || echo -e "${red}failure${nc}"
-  nginx_dependencies=(
-    lua-cjson
-    lua-resty-http
-    md5
-  )
-  for dependency in ${nginx_dependencies[*]}; do
-    if "${cosy_temp}/lua_install/bin/luarocks" list --tree="${cosy_prefix}" --porcelain \
-        >> "${cosy_log}" 2>&1 \
-        | grep --silent "${dependency}"; then
-      echo "  Not installing ${dependency} as it is already installed."
-    else
-      echo -n "  Installing ${dependency} as it is not installed... "
-      # shellcheck disable=SC2086
-      ${sudo} "${cosy_temp}/lua_install/bin/luarocks" install --tree="${cosy_prefix}" "${dependency}" \
         >> "${cosy_log}" 2>&1 \
        && echo -e "${green}success${nc}" \
        || echo -e "${red}failure${nc}"
@@ -259,6 +219,7 @@ fi
 (
   cd "${currentwd}" || exit 1
   web_dependencies=(
+    auth0-lock
     bootbox
     bootstrap3
     d3
@@ -307,8 +268,10 @@ echo -n "Installing openresty... "
       cd "${dir}" || exit 1
       ./configure --prefix="${cosy_prefix}" \
                   --without-lua51 \
+                  --with-luajit="${cosy_prefix}" \
                   --with-ipv6 \
-                  --with-pcre-jit
+                  --with-pcre-jit \
+                  -j"${parallel}"
       make -j"${parallel}"
       ${sudo} make install
       make clean
