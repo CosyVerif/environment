@@ -23,7 +23,6 @@ do
       exit 1;
     ;;
   esac
-  shift
 done
 
 # Useful variables:
@@ -94,7 +93,7 @@ if command -v git >> "${cosy_log}" 2>&1; then
   popd >> "${cosy_log}" 2>&1
   if [ "${version}" = "${oldversion}" ]; then
     echo -e "Environment is already installed at version ${green}${oldversion}${nc}."
-    return
+    exit 0
   fi
 fi
 
@@ -207,11 +206,6 @@ cosy_temp=$(realpath "${cosy_temp}")
     && echo -e "${green}success${nc}" \
     || echo -e "${red}failure${nc}"
 }
-
-if [ ! -z "${minimal+x}" ]; then
-  echo -e "Skipping openresty and web dependencies as minimal install is set."
-  return
-fi
 
 (
   cd "${currentwd}" || exit 1
