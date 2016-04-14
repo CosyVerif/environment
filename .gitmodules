@@ -1,12 +1,3 @@
-[submodule "ngx_openresty"]
-	path = dependencies/openresty
-	url = https://github.com/openresty/ngx_openresty
 [submodule "sh-realpath"]
 	path = dependencies/sh-realpath
 	url = https://github.com/mkropat/sh-realpath
-[submodule "lua.vm.js"]
-	path = dependencies/lua.vm.js
-	url = https://github.com/kripken/lua.vm.js.git
-[submodule "dependencies/nginx-jwt"]
-	path = dependencies/nginx-jwt
-	url = https://github.com/auth0/nginx-jwt.git

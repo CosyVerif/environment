@@ -14,15 +14,12 @@ do
       cosy_temp="${i#*=}"
       cosy_temp="${cosy_temp%/}"
     ;;
-    -m|--minimal)
-      minimal=true
-    ;;
     -i|--in-ci)
       in_ci=true
     ;;
     *)
       echo "Usage: "
-      echo "  install [--prefix=PREFIX] [--temp=TEMP_DIR] [--minimal] [--in-ci]"
+      echo "  install [--prefix=PREFIX] [--temp=TEMP_DIR] [--in-ci]"
       exit 1;
     ;;
   esac
@@ -131,7 +128,8 @@ cosy_temp=$(realpath "${cosy_temp}")
                                    perl build-essential wget python python-pip \
                                    libc6-dev libssl-dev \
                                    libreadline-dev libncurses5-dev libpcre3-dev \
-                                   redis-server imagemagick npm caca-utils libc-bin
+                                   redis-server imagemagick npm caca-utils libc-bin \
+                                   postgresql
         ;;
       "Darwin")
         HOMEBREW_PREFIX=$(brew config | grep "HOMEBREW_PREFIX" | tr -d ' \t' | cut -d ":" -f 2)
@@ -140,7 +138,7 @@ cosy_temp=$(realpath "${cosy_temp}")
         export LD_LIBRARY_PATH="${HOMEBREW_PREFIX}/lib:${LD_LIBRARY_PATH}"
         export DYLD_LIBRARY_PATH="${HOMEBREW_PREFIX}/lib:${DYLD_LIBRARY_PATH}"
         brew update
-        brew install openssl pcre python redis imagemagick wget npm libcaca
+        brew install openssl pcre python redis imagemagick wget npm libcaca postgresql
         brew link --force openssl
         ;;
       *)
@@ -214,84 +212,6 @@ if [ ! -z "${minimal+x}" ]; then
   echo -e "Skipping openresty and web dependencies as minimal install is set."
   return
 fi
-
-# Install web dependencies:
-(
-  cd "${currentwd}" || exit 1
-  web_dependencies=(
-    auth0-lock
-    bootbox
-    bootstrap3
-    d3
-    font-awesome
-    jquery
-    jquery-locationpicker
-    sjcl
-  )
-  rm -rf node_modules
-  echo "Installing web dependencies... "
-  for dependency in ${web_dependencies[*]}; do
-    echo -n "  Installing ${dependency}... "
-    npm install "${dependency}" >> "${cosy_log}" 2>&1 \
-      && echo -e "${green}success${nc}" \
-      || echo -e "${red}failure${nc}"
-  done
-  ${sudo} mkdir -p "${cosy_prefix}/share/cosy/www"
-  ${sudo} mkdir -p "${cosy_prefix}/share/cosy/www/js"
-  ${sudo} mkdir -p "${cosy_prefix}/share/cosy/www/css"
-  ${sudo} mkdir -p "${cosy_prefix}/share/cosy/www/fonts"
-  for module in node_modules/*; do
-    name=$(basename "${module}")
-    ${sudo} cp "${module}/dist/"*.js    "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
-    ${sudo} cp "${module}/dist/"*.map   "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
-    ${sudo} cp "${module}/dist/js/"*    "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
-    ${sudo} cp "${module}/dist/css/"*   "${cosy_prefix}/share/cosy/www/css/"   2> /dev/null || true
-    ${sudo} cp "${module}/dist/fonts/"* "${cosy_prefix}/share/cosy/www/fonts/" 2> /dev/null || true
-    ${sudo} cp "${module}/js/"*         "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
-    ${sudo} cp "${module}/css/"*        "${cosy_prefix}/share/cosy/www/css/"   2> /dev/null || true
-    ${sudo} cp "${module}/fonts/"*      "${cosy_prefix}/share/cosy/www/fonts/" 2> /dev/null || true
-    ${sudo} cp "${module}/${name}"*.js  "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
-    ${sudo} cp "${module}/${name}"*.map "${cosy_prefix}/share/cosy/www/js/"    2> /dev/null || true
-    ${sudo} cp "${module}/${name}"*.css "${cosy_prefix}/share/cosy/www/css/"   2> /dev/null || true
-  done
-  ${sudo} rm -rf node_modules
-  ${sudo} cp "dependencies/lua.vm.js/dist/lua.vm.js" "${cosy_prefix}/share/cosy/www/js/"
-)
-
-# Install openresty:
-echo -n "Installing openresty... "
-(
-  cd "${currentwd}/dependencies/openresty" || exit 1
-  make
-  for dir in openresty-*; do
-    if [ -d "${dir}" ]; then
-      cd "${dir}" || exit 1
-      ./configure --prefix="${cosy_prefix}" \
-                  --without-lua51 \
-                  --with-luajit="${cosy_prefix}" \
-                  --with-ipv6 \
-                  --with-pcre-jit \
-                  -j"${parallel}"
-      make -j"${parallel}"
-      ${sudo} make install
-      make clean
-      break
-    fi
-  done
-) >> "${cosy_log}" 2>&1 \
-  && echo -e "${green}success${nc}" \
-  || echo -e "${red}failure${nc}"
-
-# Install resty-jwt:
-echo -n "Installing openresty... "
-(
-  cd "${currentwd}/dependencies/nginx-jwt" || exit 1
-  ./build deps
-  cd ..
-  "${cosy_prefix}/bin/luarocks" make nginx-jwt-master-1.rockspec
-) >> "${cosy_log}" 2>&1 \
-  && echo -e "${green}success${nc}" \
-  || echo -e "${red}failure${nc}"
 
 (
   cd "${currentwd}" || exit 1
