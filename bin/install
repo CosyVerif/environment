@@ -173,17 +173,11 @@ cosy_temp=$(realpath "${cosy_temp}")
   dependencies=(
     argparse
     busted
-    lapis
     luacheck
     luacov
     luacov-coveralls
     luafilesystem
     luasec
-    lustache
-    serpent
-    lua-cjson
-    lua-resty-http
-    md5
   )
   for dependency in ${dependencies[*]}; do
     if "${cosy_prefix}/bin/luarocks" list --porcelain \
