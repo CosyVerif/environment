@@ -180,7 +180,7 @@ cosy_temp=$(realpath "${cosy_temp}")
 {
   export CC=clang
   echo -n "Installing lua ${lua_version} and luarocks... "
-  if pip list | grep "hererocks" >> "${cosy_temp}" 2>&1; then
+  if pip list | grep "hererocks" >> "${cosy_log}" 2>&1; then
     hererocks="hererocks"
   else
     ${sudo} pip install --root="${cosy_prefix}" hererocks
