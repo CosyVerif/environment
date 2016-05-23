@@ -91,21 +91,6 @@ function error ()
 }
 trap error ERR
 
-# Detect if environment is already installed:
-if command -v git >> "${cosy_log}" 2>&1; then
-  ${sudo} mkdir -p "${cosy_prefix}/share/cosy/"
-  if [ -f "${cosy_prefix}/share/cosy/environment.version" ]; then
-    oldversion=$(cat "${cosy_prefix}/share/cosy/environment.version")
-  fi
-  pushd "${currentwd}" >> "${cosy_log}" 2>&1
-  version=$(git rev-parse HEAD)
-  popd >> "${cosy_log}" 2>&1
-  if [ "${version}" = "${oldversion}" ]; then
-    echo -e "Environment is already installed at version ${green}${oldversion}${nc}."
-    return
-  fi
-fi
-
 {
   echo -n "Initializing git submodules... "
   (
@@ -122,6 +107,21 @@ fi
 . "${currentwd}/dependencies/sh-realpath/realpath.sh"
 cosy_prefix=$(realpath "${cosy_prefix}")
 cosy_temp=$(realpath "${cosy_temp}")
+
+# Detect if environment is already installed:
+if command -v git >> "${cosy_log}" 2>&1; then
+  ${sudo} mkdir -p "${cosy_prefix}/share/cosy/"
+  if [ -f "${cosy_prefix}/share/cosy/environment.version" ]; then
+    oldversion=$(cat "${cosy_prefix}/share/cosy/environment.version")
+  fi
+  pushd "${currentwd}" >> "${cosy_log}" 2>&1
+  version=$(git rev-parse HEAD)
+  popd >> "${cosy_log}" 2>&1
+  if [ "${version}" = "${oldversion}" ]; then
+    echo -e "Environment is already installed at version ${green}${oldversion}${nc}."
+    return
+  fi
+fi
 
 # Install dependencies:
 {
